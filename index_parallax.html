@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Apertures with Combined Shift</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Load images
+        const sourceImg = new Image();
+        sourceImg.src = 'umbrellagirl.jpg'; // Replace with your image
+        const occluderImg = new Image();
+        occluderImg.src = 'giraffe.jpg'; // Replace with your image
+
+        // Parameters
+        const params = {
+            apertureSize: 40, // Static aperture size
+            spacing: 100,
+            shiftAmount: 1,  // Maximum shift in pixels
+            shiftSpeed: 0.5, // Speed of the shift
+            shiftOffset: 0    // Current shift offset (starts at 0)
+        };
+
+        let apertures = [];
+        let animationRunning = true;
+
+        function createApertures() {
+            const xsamples = Math.floor(canvas.width / params.spacing);
+            const ysamples = Math.floor(canvas.height / params.spacing);
+
+            for (let y = 0; y < ysamples; y++) {
+                for (let x = 0; x < xsamples; x++) {
+                    const posX = x * params.spacing + params.spacing / 2;
+                    const posY = y * params.spacing + params.spacing / 2;
+
+                    apertures.push({
+                        x: posX,
+                        y: posY,
+                        rotation: 0
+                    });
+                }
+            }
+        }
+
+        function drawAperture(aperture) {
+            ctx.save();
+            ctx.translate(aperture.x + params.shiftOffset, aperture.y); // Apply shift to aperture position
+            ctx.rotate(aperture.rotation * Math.PI / 180);
+            ctx.beginPath();
+            ctx.arc(0, 0, params.apertureSize, 0, Math.PI * 2);
+            ctx.clip();
+
+            ctx.drawImage(sourceImg, -aperture.x - params.shiftOffset, -aperture.y); // Correct source image position
+            ctx.restore();
+        }
+
+        function animate() {
+            if (animationRunning) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(occluderImg, 0, 0, canvas.width, canvas.height);
+
+                apertures.forEach(aperture => {
+                    drawAperture(aperture);
+                });
+
+                // Update shift offset
+                params.shiftOffset += params.shiftSpeed;
+
+                // Reverse direction at limits
+                if (params.shiftOffset > params.shiftAmount || params.shiftOffset < -params.shiftAmount) {
+                    params.shiftSpeed *= -1;
+                }
+
+                requestAnimationFrame(animate);
+            }
+        }
+
+        Promise.all([
+            new Promise(resolve => sourceImg.onload = resolve),
+            new Promise(resolve => occluderImg.onload = resolve)
+        ]).then(() => {
+            createApertures();
+            animate();
+        });
+    </script>
+</body>
+</html>
