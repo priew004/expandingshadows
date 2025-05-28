@@ -9,13 +9,13 @@ occluderImg.src = 'coffee.jpg'; // Replace
 
 // Parameters
 const params = {
-    maxRadius: 125,  // Maximum aperture radius
+    maxRadius: 50,  // Maximum aperture radius
     minRadius: 20,    // Minimum aperture radius
     spacing: 100,
     shadowColor: 'rgba(0, 0, 0, 0.5)',
     shadowBlur: 5,
-    shadowOffsetX: 3,
-    shadowOffsetY: 3,
+    shadowOffsetX: 15,
+    shadowOffsetY: 15,
     shadowInset: 2      // Amount to inset the shadow
 };
 
